@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exklusive Einladung – Abschlussfeier 10.2</title>
+  <link href="https://googleapis.com" rel="stylesheet" />
+  <style>
+    :root {
+      --gold-primary: #c5a367;
+      --gold-gradient: linear-gradient(135deg, #8a6d3b 0%, #c5a367 50%, #e0c891 100%);
+      --bg-dark: #050505;
+      --card-bg: #0d0d0d;
+      --text-color: #e0d5bc;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-dark); color: var(--text-color);
+      font-family: 'EB Garamond', serif; display: flex; flex-direction: column;
+      align-items: center; min-height: 100vh; padding: 100px 20px; overflow-x: hidden;
+    }
+
+    .bg-overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, #1a150a 0%, #050505 100%); z-index: -2; }
+    .particles { position: fixed; inset: 0; opacity: 0.15; z-index: -1; background-image: radial-gradient(var(--gold-primary) 1px, transparent 1px); background-size: 65px 65px; animation: moveBg 120s linear infinite; }
+    @keyframes moveBg { from { background-position: 0 0; } to { background-position: 1000px 1000px; } }
+
+    /* Admin Bar */
+    #admin-tools {
+      position: fixed; top: 0; left: 0; right: 0; background: rgba(13, 13, 13, 0.98);
+      border-bottom: 1px solid var(--gold-primary); padding: 25px; z-index: 1000;
+      display: none; justify-content: center; gap: 20px; backdrop-filter: blur(15px);
+    }
+    body.is-admin #admin-tools { display: flex; }
+    #admin-tools input { background: #1a1a1a; border: 1px solid var(--gold-primary); color: white; padding: 12px 25px; font-size: 16px; width: 350px; border-radius: 4px; outline: none; }
+
+    /* Die Einladungskarte - Jetzt deutlich GRÖSSER */
+    .invitation-wrapper { position: relative; max-width: 900px; width: 100%; padding: 20px; animation: fadeIn 2.5s ease-out; }
+    
+    .card {
+      background-color: var(--card-bg); border: 1px solid #8a6d3b;
+      padding: 140px 80px; text-align: center; position: relative;
+      box-shadow: 0 0 150px rgba(0,0,0,1);
+    }
+
+    .corner { position: absolute; width: 120px; height: 120px; border: 1.5px solid var(--gold-primary); opacity: 0.6; }
+    .corner-tl { top: 40px; left: 40px; border-right: none; border-bottom: none; }
+    .corner-tr { top: 40px; right: 40px; border-left: none; border-bottom: none; }
+    .corner-bl { bottom: 40px; left: 40px; border-right: none; border-top: none; }
+    .corner-br { bottom: 40px; right: 40px; border-left: none; border-top: none; }
+
+    .ornament { width: 250px; height: 1px; background: var(--gold-gradient); margin: 50px auto; position: relative; }
+    .ornament::after { content: '✦'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); color: var(--gold-primary); font-size: 22px; }
+
+    h1 {
+      font-family: 'Cinzel', serif; font-size: clamp(50px, 12vw, 100px);
+      background: var(--gold-gradient); -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent; letter-spacing: 22px; text-transform: uppercase;
+      font-weight: 900; margin-bottom: 15px;
+    }
+
+    .sub-header { font-family: 'Cinzel', serif; font-size: 20px; letter-spacing: 6px; color: var(--gold-dark); text-transform: uppercase; margin-bottom: 70px; }
+
+    .main-text { font-family: 'Playfair Display', serif; font-size: 30px; line-height: 2.2; margin: 50px 0; font-style: italic; color: #d4c4a0; }
+
+    .event-details { border: 1px solid rgba(197, 163, 103, 0.2); padding: 60px 40px; margin: 70px 0; background: rgba(197, 163, 103, 0.03); }
+    .event-details p { font-family: 'Cinzel', serif; font-size: 26px; letter-spacing: 5px; color: #e0c891; margin: 20px 0; text-transform: uppercase; }
+
+    .signature { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--gold-dark); margin-top: 80px; }
+
+    /* Lehrerliste */
+    .teacher-section { margin-top: 150px; width: 100%; max-width: 800px; }
+    .teacher-card { background: rgba(255,255,255,0.03); border: 1px solid #1a1a1a; padding: 40px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; transition: 0.4s; }
+    .teacher-name { font-family: 'Cinzel', serif; font-size: 24px; color: #e0c891; }
+    
+    .status-badge { font-family: 'Cinzel', serif; font-size: 16px; margin-left: 15px; padding: 5px 12px; border-radius: 4px; border: 1px solid; }
+    .status-ja { color: #7dbf7d; border-color: #3a6b3a; background: rgba(58, 107, 58, 0.1); }
+    .status-nein { color: #bf7d7d; border-color: #6b3a3a; background: rgba(107, 58, 58, 0.1); }
+
+    .btn-gold { background: transparent; border: 1px solid var(--gold-primary); color: var(--gold-primary); padding: 12px 30px; font-family: 'Cinzel', serif; font-size: 14px; cursor: pointer; text-transform: uppercase; transition: 0.3s; margin-left: 20px; letter-spacing: 2px; }
+    .btn-gold:hover { background: var(--gold-primary); color: #000; }
+
+    .footer-login { margin-top: 200px; opacity: 0.2; cursor: pointer; font-size: 14px; letter-spacing: 4px; text-transform: uppercase; transition: 0.5s; }
+    .footer-login:hover { opacity: 1; color: var(--gold-primary); }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <div class="bg-overlay"></div>
+  <div class="particles"></div>
+
+  <!-- Admin Bereich -->
+  <div id="admin-tools">
+    <input type="text" id="new-name" placeholder="Name der Lehrkraft eingeben...">
+    <button class="btn-gold" onclick="addTeacher()">Hinzufügen</button>
+  </div>
+
+  <div class="invitation-wrapper">
+    <div class="card">
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+
+      <div class="ornament"></div>
+      <h1>Einladung</h1>
+      <div class="sub-header">Zur feierlichen Verabschiedung der Klasse 10.2</div>
+      
+      <p class="main-text">
+        Sehr geehrte Lehrerinnen und Lehrer,<br><br>
+        ein gemeinsamer Weg neigt sich dem Ende zu.<br>
+        Diesen besonderen Moment möchten wir gerne<br>
+        im festlichen Rahmen mit Ihnen verbringen.
+      </p>
+
+      <div class="event-details">
+        <p>4. Juli 2026</p>
+        <p>Empfang ab 18:00 Uhr</p>
+        <div style="height: 1px; width: 80px; background: var(--gold-dark); margin: 30px auto; opacity: 0.5;"></div>
+        <p>Anglerverein Wildau</p>
+      </div>
+
+      <p class="main-text" style="font-size: 28px;">
+        Wir freuen uns auf einen unvergesslichen<br>Abend voller Erinnerungen.
+      </p>
+
+      <div class="signature">Herzlichst,<br>Ihre Klasse 10.2</div>
+      <div class="ornament"></div>
+    </div>
+  </div>
+
+  <div class="teacher-section">
+    <p style="text-align:center; font-family:Cinzel; color:#8a6d3b; margin-bottom:60px; letter-spacing:8px; font-size:18px;">✦ RÜCKMELDUNGEN ✦</p>
+    <div id="list">Lade Gästeliste...</div>
+  </div>
+
+  <div class="footer-login" onclick="login()">⚙ Administrator Login</div>
+
+  <script>
+    const USER = 'alexreim-svoj';
+    const REPO = 'Abschlusfeier-10.2';
+    const token = localStorage.getItem('gh_token');
+
+    if (token) document.body.classList.add('is-admin');
+
+    async function load() {
+      const container = document.getElementById('list');
+      try {
+        const res = await fetch(`https://github.com{USER}/${REPO}/contents/lehrer.json?t=${Date.now()}`);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        const list = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+        container.innerHTML = '';
+        list.forEach((t, i) => {
+          const status = t.status || 'offen';
+          const badge = status === 'ja' ? '<span class="status-badge status-ja">Zusage ✅</span>' : (status === 'nein' ? '<span class="status-badge status-nein">Absage ❌</span>' : '');
+          const div = document.createElement('div');
+          div.className = 'teacher-card';
+          div.innerHTML = `<span class="teacher-name">${t.name} ${badge}</span>
+            <div>
+              <button class="btn-gold" onclick="updateStatus(${i}, 'ja', ${JSON.stringify(list).replace(/"/g, '&quot;')}, '${data.sha}')">Ja</button>
+              <button class="btn-gold" onclick="updateStatus(${i}, 'nein', ${JSON.stringify(list).replace(/"/g, '&quot;')}, '${data.sha}')">Nein</button>
+              ${token ? `<button onclick="del(${i}, '${data.sha}', ${JSON.stringify(list).replace(/"/g, '&quot;')})" style="color:#6b3a3a; background:none; border:none; margin-left:30px; cursor:pointer; font-size:24px;">✕</button>` : ''}
+            </div>`;
+          container.appendChild(div);
+        });
+      } catch (e) { container.innerHTML = '<p style="text-align:center; opacity:0.5;">Bitte Lehrer über die Admin-Leiste hinzufügen.</p>'; }
+    }
+
+    async function updateStatus(idx, stat, list, sha) {
+      if (!token) { alert("Bitte Administrator Login nutzen (unten klicken)."); return; }
+      list[idx].status = stat;
+      await save(list, sha);
+    }
+
+    async function addTeacher() {
+      const val = document.getElementById('new-name').value;
+      if (!val || !token) return;
+      const res = await fetch(`https://github.com{USER}/${REPO}/contents/lehrer.json`);
+      const data = await res.json();
+      const list = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+      list.push({name: val, status: 'offen'});
+      await save(list, data.sha);
+    }
+
+    async function del(idx, sha, list) {
+      if(!confirm("Eintrag unwiderruflich löschen?")) return;
+      list.splice(idx, 1);
+      await save(list, sha);
+    }
+
+    async function save(l, s) {
+      const res = await fetch(`https://github.com{USER}/${REPO}/contents/lehrer.json`, {
+        method: 'PUT',
+        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: "Update Guestlist", content: btoa(unescape(encodeURIComponent(JSON.stringify(l, null, 2)))), sha: s })
+      });
+      if (res.ok) location.reload(); else alert("Fehler beim Speichern auf GitHub. Bitte Token prüfen!");
+    }
+
+    function login() {
+      const t = prompt("GitHub Admin-Token eingeben:");
+      if(t) { localStorage.setItem('gh_token', t.trim()); location.reload(); }
+    }
+    load();
+  </script>
+</body>
+</html>
