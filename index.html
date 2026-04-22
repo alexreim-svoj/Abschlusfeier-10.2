@@ -11,6 +11,8 @@
       --dark-bg: #050505;
       --card-bg: #0a0a0a;
       --text-color: #e8dcc4;
+      --green: #4caf50;
+      --red: #f44336;
     }
     
     * {
@@ -53,7 +55,6 @@
       z-index: 1;
     }
     
-    /* Goldener Rahmen mit Eckornamenten */
     .invitation-card::before {
       content: '';
       position: absolute;
@@ -167,7 +168,6 @@
       letter-spacing: 2px;
     }
     
-    /* Rückmeldungen Sektion */
     .feedback-section {
       position: relative;
       max-width: 800px;
@@ -202,6 +202,12 @@
       border-color: rgba(197, 163, 103, 0.4);
     }
     
+    .teacher-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
     .teacher-name {
       font-family: 'Cinzel', serif;
       font-size: 18px;
@@ -209,9 +215,33 @@
       letter-spacing: 2px;
     }
     
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+    
+    .status-ja {
+      background: rgba(76, 175, 80, 0.2);
+      color: var(--green);
+      border: 1px solid var(--green);
+    }
+    
+    .status-nein {
+      background: rgba(244, 67, 54, 0.2);
+      color: var(--red);
+      border: 1px solid var(--red);
+    }
+    
     .button-group {
       display: flex;
-      gap: 15px;
+      gap: 12px;
     }
     
     .btn {
@@ -234,11 +264,34 @@
       box-shadow: 0 4px 12px rgba(197, 163, 103, 0.4);
     }
     
+    .btn.active-ja {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+    }
+    
+    .btn.active-nein {
+      background: var(--red);
+      border-color: var(--red);
+      color: white;
+    }
+    
     .loading {
       text-align: center;
       color: var(--gold);
       font-style: italic;
       padding: 40px;
+    }
+    
+    .admin-note {
+      text-align: center;
+      margin-top: 60px;
+      padding: 30px;
+      background: rgba(197, 163, 103, 0.05);
+      border: 1px solid rgba(197, 163, 103, 0.2);
+      font-size: 14px;
+      color: var(--gold);
+      opacity: 0.7;
     }
     
     @media (max-width: 768px) {
@@ -260,13 +313,16 @@
         gap: 20px;
         text-align: center;
       }
+      
+      .teacher-info {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
   <div class="bg-pattern"></div>
   
-  <!-- Einladungskarte -->
   <div class="invitation-card">
     <div class="corner-ornament top-left"></div>
     <div class="corner-ornament top-right"></div>
@@ -305,59 +361,168 @@
     <div class="divider">✦</div>
   </div>
   
-  <!-- Rückmeldungen -->
   <div class="feedback-section">
     <h2 class="section-title">✦ Rückmeldungen ✦</h2>
     <div id="teacher-list" class="loading">Lade Lehrerliste...</div>
   </div>
   
+  <div class="admin-note">
+    <strong>Hinweis:</strong> Die Rückmeldungen werden automatisch gespeichert.<br>
+    Sie können Ihre Antwort jederzeit ändern.
+  </div>
+  
   <script>
-    // Funktion zum Laden der Lehrerliste
+    // WICHTIG: Hier dein GitHub Personal Access Token einfügen
+    const GITHUB_TOKEN = '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'; // ⚠️ Ersetzen!
+    const GITHUB_USER = 'alexreim-svoj';
+    const GITHUB_REPO = 'Abschlussfeier-10.2';
+    const FILE_PATH = 'lehrer.json';
+    
+    let teachers = [];
+    let fileSha = null;
+    
+    // Lehrerliste von GitHub laden
     async function loadTeachers() {
       const container = document.getElementById('teacher-list');
       
       try {
-        const response = await fetch('lehrer.json');
+        const response = await fetch(
+          `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`,
+          {
+            headers: {
+              'Accept': 'application/vnd.github.v3+json',
+              'Authorization': `token ${GITHUB_TOKEN}`
+            }
+          }
+        );
         
         if (!response.ok) {
-          throw new Error('Datei nicht gefunden');
+          throw new Error('Datei konnte nicht geladen werden');
         }
         
-        const teachers = await response.json();
+        const data = await response.json();
+        fileSha = data.sha;
         
-        // Liste leeren
-        container.innerHTML = '';
+        // Decode Base64 content
+        const content = atob(data.content);
+        teachers = JSON.parse(content);
         
-        // Lehrer durchgehen und HTML erstellen
-        teachers.forEach(teacher => {
-          const item = document.createElement('div');
-          item.className = 'teacher-item';
-          
-          item.innerHTML = `
-            <span class="teacher-name">${teacher.name}</span>
-            <div class="button-group">
-              <button class="btn" onclick="handleResponse('${teacher.name}', 'Ja')">Ja</button>
-              <button class="btn" onclick="handleResponse('${teacher.name}', 'Nein')">Nein</button>
-            </div>
-          `;
-          
-          container.appendChild(item);
-        });
+        renderTeachers();
         
       } catch (error) {
         console.error('Fehler beim Laden:', error);
-        container.innerHTML = '<p class="loading">Lehrerliste konnte nicht geladen werden. Bitte erstellen Sie eine lehrer.json Datei.</p>';
+        container.innerHTML = `
+          <p class="loading">
+            ⚠️ Fehler beim Laden der Lehrerliste.<br><br>
+            Bitte prüfen Sie:<br>
+            1. Ist die lehrer.json im Repository vorhanden?<br>
+            2. Ist der GitHub Token korrekt?<br>
+            3. Hat der Token die Berechtigung "repo"?
+          </p>
+        `;
       }
     }
     
-    // Funktion für Antwort-Handling
-    function handleResponse(name, status) {
-      const githubUrl = `https://github.com/alexreim-svoj/Abschlusfeier-10.2/issues/new?title=${encodeURIComponent(name + ' - ' + status)}`;
-      window.open(githubUrl, '_blank');
+    // Lehrer anzeigen
+    function renderTeachers() {
+      const container = document.getElementById('teacher-list');
+      container.innerHTML = '';
+      
+      teachers.forEach((teacher, index) => {
+        const item = document.createElement('div');
+        item.className = 'teacher-item';
+        
+        const status = teacher.status || null;
+        let statusBadge = '';
+        
+        if (status === 'ja') {
+          statusBadge = '<span class="status-badge status-ja">✓ Zusage</span>';
+        } else if (status === 'nein') {
+          statusBadge = '<span class="status-badge status-nein">✗ Absage</span>';
+        }
+        
+        const jaClass = status === 'ja' ? 'active-ja' : '';
+        const neinClass = status === 'nein' ? 'active-nein' : '';
+        
+        item.innerHTML = `
+          <div class="teacher-info">
+            <span class="teacher-name">${teacher.name}</span>
+            ${statusBadge}
+          </div>
+          <div class="button-group">
+            <button class="btn ${jaClass}" onclick="handleResponse(${index}, 'ja')">Ja</button>
+            <button class="btn ${neinClass}" onclick="handleResponse(${index}, 'nein')">Nein</button>
+          </div>
+        `;
+        
+        container.appendChild(item);
+      });
     }
     
-    // Beim Laden der Seite die Lehrerliste laden
+    // Antwort verarbeiten und auf GitHub speichern
+    async function handleResponse(index, newStatus) {
+      const teacher = teachers[index];
+      const oldStatus = teacher.status;
+      
+      // Bestätigung wenn Status geändert wird
+      if (oldStatus && oldStatus !== newStatus) {
+        const confirmChange = confirm(
+          `${teacher.name}, möchten Sie Ihre Antwort von "${oldStatus === 'ja' ? 'Zusage' : 'Absage'}" zu "${newStatus === 'ja' ? 'Zusage' : 'Absage'}" ändern?`
+        );
+        if (!confirmChange) return;
+      }
+      
+      // Status aktualisieren
+      teachers[index].status = newStatus;
+      
+      // Auf GitHub speichern
+      try {
+        const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(teachers, null, 2))));
+        
+        const response = await fetch(
+          `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Accept': 'application/vnd.github.v3+json',
+              'Authorization': `token ${GITHUB_TOKEN}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              message: `Update: ${teacher.name} - ${newStatus}`,
+              content: updatedContent,
+              sha: fileSha
+            })
+          }
+        );
+        
+        if (!response.ok) {
+          throw new Error('Speichern fehlgeschlagen');
+        }
+        
+        const result = await response.json();
+        fileSha = result.content.sha;
+        
+        // Erfolg!
+        renderTeachers();
+        
+        alert(`✓ Vielen Dank, ${teacher.name}!\nIhre ${newStatus === 'ja' ? 'Zusage' : 'Absage'} wurde gespeichert.`);
+        
+      } catch (error) {
+        console.error('Fehler beim Speichern:', error);
+        alert('❌ Fehler beim Speichern. Bitte versuchen Sie es erneut.');
+        
+        // Status zurücksetzen
+        teachers[index].status = oldStatus;
+        renderTeachers();
+      }
+    }
+    
+    // Beim Laden der Seite
     document.addEventListener('DOMContentLoaded', loadTeachers);
+    
+    // Alle 30 Sekunden aktualisieren
+    setInterval(loadTeachers, 30000);
   </script>
 </body>
 </html>
