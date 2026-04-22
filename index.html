@@ -138,8 +138,7 @@
   <div class="footer-login" onclick="adminLogin()">⚙ Administrator Login</div>
 
     <script>
-  const USER = 'alexreim-svoj';
-  const REPO = 'Abschlussfeier-10.2';
+  // Wir nutzen jetzt feste URLs, damit die Fehler aus der Konsole verschwinden
   const token = localStorage.getItem('gh_token');
 
   if (token) document.body.classList.add('is-admin');
@@ -147,7 +146,8 @@
   async function load() {
     const container = document.getElementById('list');
     try {
-      const res = await fetch(`https://github.com{USER}/${REPO}/contents/lehrer.json?t=${Date.now()}`);
+      // Direkte URL ohne Variablen-Wirrwarr
+      const res = await fetch(`https://github.com{Date.now()}`);
       if (!res.ok) throw new Error();
       const data = await res.json();
       const list = JSON.parse(decodeURIComponent(escape(atob(data.content))));
@@ -170,7 +170,7 @@
 
   async function updateStatus(index, newStatus) {
     if (!token) { alert("Bitte Administrator Login nutzen."); return; }
-    const res = await fetch(`https://github.com{USER}/${REPO}/contents/lehrer.json`);
+    const res = await fetch(`https://github.com`);
     const data = await res.json();
     const list = JSON.parse(decodeURIComponent(escape(atob(data.content))));
     list[index].status = newStatus;
@@ -181,7 +181,7 @@
     const val = document.getElementById('new-name').value;
     if(!val || !token) return;
     try {
-      const res = await fetch(`https://github.com{USER}/${REPO}/contents/lehrer.json`);
+      const res = await fetch(`https://github.com`);
       let list = []; let sha = "";
       if (res.ok) {
         const data = await res.json();
@@ -193,10 +193,19 @@
     } catch(e) { await save([{name: val, status: 'offen'}], ""); }
   }
 
+  async function del(idx) {
+    if(!confirm("Löschen?") || !token) return;
+    const res = await fetch(`https://github.com`);
+    const data = await res.json();
+    const list = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+    list.splice(idx, 1);
+    await save(list, data.sha);
+  }
+
   async function save(l, s) {
     const body = { message: "Update", content: btoa(unescape(encodeURIComponent(JSON.stringify(l, null, 2)))) };
     if (s) body.sha = s;
-    const res = await fetch(`https://github.com{USER}/${REPO}/contents/lehrer.json`, {
+    const res = await fetch(`https://github.com`, {
       method: 'PUT',
       headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
