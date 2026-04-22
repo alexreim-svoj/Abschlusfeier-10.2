@@ -1,17 +1,22 @@
 [
   {
-    "name": "Frau Müller"
+    "name": "Frau Frenzel",
+    "status": null
   },
   {
-    "name": "Herr Schmidt"
+    "name": "Herr Simon",
+    "status": null
   },
   {
-    "name": "Frau Wagner"
+    "name": "Frau ...",
+    "status": null
   },
   {
-    "name": "Herr Becker"
+    "name": "Herr Becker",
+    "status": null
   },
   {
-    "name": "Frau Hoffmann"
+    "name": "Frau Hoffmann",
+    "status": null
   }
 ]
