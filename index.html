@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Einladung – Abschlussfeier Klasse 10.2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c5a367;
+      --dark-bg: #050505;
+      --card-bg: #0a0a0a;
+      --text-color: #e8dcc4;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background-color: var(--dark-bg);
+      color: var(--text-color);
+      font-family: 'EB Garamond', serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+    
+    .bg-pattern {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 50%, rgba(197, 163, 103, 0.03) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .invitation-card {
+      position: relative;
+      max-width: 800px;
+      width: 100%;
+      background: var(--card-bg);
+      padding: 80px 60px;
+      margin: 40px auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      z-index: 1;
+    }
+    
+    /* Goldener Rahmen mit Eckornamenten */
+    .invitation-card::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+      border: 1px solid var(--gold);
+      pointer-events: none;
+    }
+    
+    .corner-ornament {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-style: solid;
+      border-color: var(--gold);
+    }
+    
+    .corner-ornament.top-left {
+      top: 30px;
+      left: 30px;
+      border-width: 2px 0 0 2px;
+    }
+    
+    .corner-ornament.top-right {
+      top: 30px;
+      right: 30px;
+      border-width: 2px 2px 0 0;
+    }
+    
+    .corner-ornament.bottom-left {
+      bottom: 30px;
+      left: 30px;
+      border-width: 0 0 2px 2px;
+    }
+    
+    .corner-ornament.bottom-right {
+      bottom: 30px;
+      right: 30px;
+      border-width: 0 2px 2px 0;
+    }
+    
+    .divider {
+      text-align: center;
+      color: var(--gold);
+      font-size: 20px;
+      margin: 30px 0;
+      letter-spacing: 20px;
+    }
+    
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 56px;
+      font-weight: 900;
+      text-align: center;
+      color: var(--gold);
+      letter-spacing: 12px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    
+    .subtitle {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      text-align: center;
+      color: var(--gold);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 50px;
+      opacity: 0.8;
+    }
+    
+    .main-text {
+      font-size: 20px;
+      text-align: center;
+      line-height: 1.8;
+      margin: 40px 0;
+      color: var(--text-color);
+    }
+    
+    .event-details {
+      text-align: center;
+      margin: 50px 0;
+      padding: 40px 30px;
+      border-top: 1px solid rgba(197, 163, 103, 0.3);
+      border-bottom: 1px solid rgba(197, 163, 103, 0.3);
+    }
+    
+    .event-details p {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      color: var(--gold);
+      margin: 12px 0;
+      letter-spacing: 3px;
+    }
+    
+    .closing {
+      font-size: 20px;
+      text-align: center;
+      line-height: 1.8;
+      margin: 40px 0 20px;
+    }
+    
+    .signature {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      text-align: center;
+      color: var(--gold);
+      margin-top: 50px;
+      letter-spacing: 2px;
+    }
+    
+    /* Rückmeldungen Sektion */
+    .feedback-section {
+      position: relative;
+      max-width: 800px;
+      width: 100%;
+      margin: 60px auto 40px;
+      z-index: 1;
+    }
+    
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: 24px;
+      text-align: center;
+      color: var(--gold);
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+    
+    .teacher-item {
+      background: rgba(197, 163, 103, 0.05);
+      border: 1px solid rgba(197, 163, 103, 0.2);
+      padding: 25px 30px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+    
+    .teacher-item:hover {
+      background: rgba(197, 163, 103, 0.08);
+      border-color: rgba(197, 163, 103, 0.4);
+    }
+    
+    .teacher-name {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      color: var(--text-color);
+      letter-spacing: 2px;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .btn {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      padding: 10px 28px;
+      border: 1px solid var(--gold);
+      background: transparent;
+      color: var(--gold);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+      background: var(--gold);
+      color: var(--dark-bg);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(197, 163, 103, 0.4);
+    }
+    
+    .loading {
+      text-align: center;
+      color: var(--gold);
+      font-style: italic;
+      padding: 40px;
+    }
+    
+    @media (max-width: 768px) {
+      .invitation-card {
+        padding: 60px 30px;
+      }
+      
+      h1 {
+        font-size: 36px;
+        letter-spacing: 6px;
+      }
+      
+      .subtitle {
+        font-size: 12px;
+      }
+      
+      .teacher-item {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+  
+  <!-- Einladungskarte -->
+  <div class="invitation-card">
+    <div class="corner-ornament top-left"></div>
+    <div class="corner-ornament top-right"></div>
+    <div class="corner-ornament bottom-left"></div>
+    <div class="corner-ornament bottom-right"></div>
+    
+    <div class="divider">✦</div>
+    
+    <h1>Einladung</h1>
+    <p class="subtitle">Zur feierlichen Verabschiedung der Klasse 10.2</p>
+    
+    <p class="main-text">
+      Sehr geehrte Lehrerinnen und Lehrer,<br><br>
+      ein gemeinsamer Weg neigt sich dem Ende zu.<br>
+      Diesen besonderen Moment möchten wir gerne<br>
+      im festlichen Rahmen mit Ihnen verbringen.
+    </p>
+    
+    <div class="event-details">
+      <p>4. Juli 2026</p>
+      <p>Empfang ab 18:00 Uhr</p>
+      <div class="divider">✦</div>
+      <p>Anglerverein Wildau</p>
+    </div>
+    
+    <p class="closing">
+      Wir freuen uns auf einen unvergesslichen<br>
+      Abend voller Erinnerungen.
+    </p>
+    
+    <p class="signature">
+      Herzlichst,<br>
+      Ihre Klasse 10.2
+    </p>
+    
+    <div class="divider">✦</div>
+  </div>
+  
+  <!-- Rückmeldungen -->
+  <div class="feedback-section">
+    <h2 class="section-title">✦ Rückmeldungen ✦</h2>
+    <div id="teacher-list" class="loading">Lade Lehrerliste...</div>
+  </div>
+  
+  <script>
+    // Funktion zum Laden der Lehrerliste
+    async function loadTeachers() {
+      const container = document.getElementById('teacher-list');
+      
+      try {
+        const response = await fetch('lehrer.json');
+        
+        if (!response.ok) {
+          throw new Error('Datei nicht gefunden');
+        }
+        
+        const teachers = await response.json();
+        
+        // Liste leeren
+        container.innerHTML = '';
+        
+        // Lehrer durchgehen und HTML erstellen
+        teachers.forEach(teacher => {
+          const item = document.createElement('div');
+          item.className = 'teacher-item';
+          
+          item.innerHTML = `
+            <span class="teacher-name">${teacher.name}</span>
+            <div class="button-group">
+              <button class="btn" onclick="handleResponse('${teacher.name}', 'Ja')">Ja</button>
+              <button class="btn" onclick="handleResponse('${teacher.name}', 'Nein')">Nein</button>
+            </div>
+          `;
+          
+          container.appendChild(item);
+        });
+        
+      } catch (error) {
+        console.error('Fehler beim Laden:', error);
+        container.innerHTML = '<p class="loading">Lehrerliste konnte nicht geladen werden. Bitte erstellen Sie eine lehrer.json Datei.</p>';
+      }
+    }
+    
+    // Funktion für Antwort-Handling
+    function handleResponse(name, status) {
+      const githubUrl = `https://github.com/alexreim-svoj/Abschlussfeier-10.2/issues/new?title=${encodeURIComponent(name + ' - ' + status)}`;
+      window.open(githubUrl, '_blank');
+    }
+    
+    // Beim Laden der Seite die Lehrerliste laden
+    document.addEventListener('DOMContentLoaded', loadTeachers);
+  </script>
+</body>
+</html>
