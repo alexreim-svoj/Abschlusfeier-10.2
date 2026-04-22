@@ -1,180 +1,103 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Exklusive Einladung – Abschlussfeier 10.2</title>
-  <link href="https://googleapis.com" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Einladung – Abschlussfeier 10.2</title>
+  <link href="https://googleapis.com" rel="stylesheet">
   <style>
-    :root {
-      --gold-primary: #c5a367;
-      --gold-gradient: linear-gradient(135deg, #8a6d3b 0%, #c5a367 50%, #e0c891 100%);
-      --bg-dark: #050505;
-      --card-bg: #0d0d0d;
-      --text-color: #e0d5bc;
-    }
-
+    :root { --gold: #c5a367; --gold-dark: #8a6d3b; --bg: #050505; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: var(--bg); color: #e0d5bc; font-family: 'EB Garamond', serif; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; }
 
-    body {
-      background-color: var(--bg-dark); color: var(--text-color);
-      font-family: 'EB Garamond', serif; display: flex; flex-direction: column;
-      align-items: center; min-height: 100vh; padding: 100px 20px; overflow-x: hidden;
-    }
-
-    .bg-overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, #1a150a 0%, #050505 100%); z-index: -2; }
-    .particles { position: fixed; inset: 0; opacity: 0.15; z-index: -1; background-image: radial-gradient(var(--gold-primary) 1px, transparent 1px); background-size: 65px 65px; animation: moveBg 120s linear infinite; }
-    @keyframes moveBg { from { background-position: 0 0; } to { background-position: 1000px 1000px; } }
-
-    /* Admin Bar */
-    #admin-tools {
-      position: fixed; top: 0; left: 0; right: 0; background: rgba(13, 13, 13, 0.98);
-      border-bottom: 1px solid var(--gold-primary); padding: 25px; z-index: 1000;
-      display: none; justify-content: center; gap: 20px; backdrop-filter: blur(15px);
-    }
-    body.is-admin #admin-tools { display: flex; }
-    #admin-tools input { background: #1a1a1a; border: 1px solid var(--gold-primary); color: white; padding: 12px 25px; font-size: 16px; width: 350px; border-radius: 4px; outline: none; }
-
-    /* Die Einladungskarte - Jetzt deutlich GRÖSSER */
-    .invitation-wrapper { position: relative; max-width: 900px; width: 100%; padding: 20px; animation: fadeIn 2.5s ease-out; }
-    
+    /* Die Einladungskarte */
     .card {
-      background-color: var(--card-bg); border: 1px solid #8a6d3b;
-      padding: 140px 80px; text-align: center; position: relative;
-      box-shadow: 0 0 150px rgba(0,0,0,1);
+      background-color: #0d0d0d; border: 1px solid var(--gold-dark);
+      padding: 60px 40px; max-width: 600px; width: 100%; text-align: center;
+      position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.8);
+      margin-bottom: 50px;
     }
 
-    .corner { position: absolute; width: 120px; height: 120px; border: 1.5px solid var(--gold-primary); opacity: 0.6; }
-    .corner-tl { top: 40px; left: 40px; border-right: none; border-bottom: none; }
-    .corner-tr { top: 40px; right: 40px; border-left: none; border-bottom: none; }
-    .corner-bl { bottom: 40px; left: 40px; border-right: none; border-top: none; }
-    .corner-br { bottom: 40px; right: 40px; border-left: none; border-top: none; }
+    /* Goldene Ecken (Ersatz für die leeren Quadrate) */
+    .corner { position: absolute; width: 40px; height: 40px; border: 2px solid var(--gold); opacity: 0.7; }
+    .corner-tl { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+    .corner-tr { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+    .corner-bl { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+    .corner-br { bottom: 15px; right: 15px; border-left: none; border-top: none; }
 
-    .ornament { width: 250px; height: 1px; background: var(--gold-gradient); margin: 50px auto; position: relative; }
-    .ornament::after { content: '✦'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); color: var(--gold-primary); font-size: 22px; }
-
-    h1 {
-      font-family: 'Cinzel', serif; font-size: clamp(50px, 12vw, 100px);
-      background: var(--gold-gradient); -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent; letter-spacing: 22px; text-transform: uppercase;
-      font-weight: 900; margin-bottom: 15px;
-    }
-
-    .sub-header { font-family: 'Cinzel', serif; font-size: 20px; letter-spacing: 6px; color: var(--gold-dark); text-transform: uppercase; margin-bottom: 70px; }
-
-    .main-text { font-family: 'Playfair Display', serif; font-size: 30px; line-height: 2.2; margin: 50px 0; font-style: italic; color: #d4c4a0; }
-
-    .event-details { border: 1px solid rgba(197, 163, 103, 0.2); padding: 60px 40px; margin: 70px 0; background: rgba(197, 163, 103, 0.03); }
-    .event-details p { font-family: 'Cinzel', serif; font-size: 26px; letter-spacing: 5px; color: #e0c891; margin: 20px 0; text-transform: uppercase; }
-
-    .signature { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--gold-dark); margin-top: 80px; }
-
-    /* Lehrerliste */
-    .teacher-section { margin-top: 150px; width: 100%; max-width: 800px; }
-    .teacher-card { background: rgba(255,255,255,0.03); border: 1px solid #1a1a1a; padding: 40px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; transition: 0.4s; }
-    .teacher-name { font-family: 'Cinzel', serif; font-size: 24px; color: #e0c891; }
+    h1 { font-family: 'Cinzel', serif; font-size: clamp(30px, 8vw, 55px); letter-spacing: 5px; color: var(--gold); margin: 20px 0; text-transform: uppercase; }
+    .sub-h1 { font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: 2px; color: var(--gold-dark); margin-bottom: 30px; text-transform: uppercase; }
+    .content-text { font-size: clamp(18px, 4vw, 22px); font-style: italic; line-height: 1.6; margin: 25px 0; color: #d4c4a0; }
     
-    .status-badge { font-family: 'Cinzel', serif; font-size: 16px; margin-left: 15px; padding: 5px 12px; border-radius: 4px; border: 1px solid; }
-    .status-ja { color: #7dbf7d; border-color: #3a6b3a; background: rgba(58, 107, 58, 0.1); }
-    .status-nein { color: #bf7d7d; border-color: #6b3a3a; background: rgba(107, 58, 58, 0.1); }
+    .details-box { border: 1px solid rgba(197, 163, 103, 0.2); padding: 20px; margin: 30px 0; }
+    .details-box p { font-family: 'Cinzel', serif; font-size: 18px; letter-spacing: 2px; margin: 5px 0; }
 
-    .btn-gold { background: transparent; border: 1px solid var(--gold-primary); color: var(--gold-primary); padding: 12px 30px; font-family: 'Cinzel', serif; font-size: 14px; cursor: pointer; text-transform: uppercase; transition: 0.3s; margin-left: 20px; letter-spacing: 2px; }
-    .btn-gold:hover { background: var(--gold-primary); color: #000; }
+    .divider { color: var(--gold); font-size: 20px; margin: 20px 0; }
 
-    .footer-login { margin-top: 200px; opacity: 0.2; cursor: pointer; font-size: 14px; letter-spacing: 4px; text-transform: uppercase; transition: 0.5s; }
-    .footer-login:hover { opacity: 1; color: var(--gold-primary); }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+    /* Lehrer Liste */
+    .teacher-section { width: 100%; max-width: 600px; text-align: center; }
+    .teacher-card {
+      background: rgba(255,255,255,0.02); border-bottom: 1px solid #1f1f1f;
+      padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+    }
+    .btn-gold {
+      background: transparent; border: 1px solid var(--gold-dark); color: var(--gold);
+      padding: 8px 15px; cursor: pointer; font-family: 'Cinzel', serif; font-size: 10px; text-transform: uppercase;
+    }
+    .btn-gold:hover { background: var(--gold-dark); color: white; }
   </style>
 </head>
 <body>
 
-  <div class="bg-overlay"></div>
-  <div class="particles"></div>
+  <div class="card">
+    <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+    
+    <div class="divider">✦</div>
+    <h1>Einladung</h1>
+    <div class="sub-h1">Zur feierlichen Verabschiedung der Klasse 10.2</div>
+    <div class="divider">✦</div>
 
-  <!-- Admin Bereich -->
-  <div id="admin-tools">
-    <input type="text" id="new-name" placeholder="Name der Lehrkraft eingeben...">
-    <button class="btn-gold" onclick="addTeacher()">Hinzufügen</button>
-  </div>
+    <p class="content-text">Sehr geehrte Lehrerinnen und Lehrer,<br>ein gemeinsamer Weg neigt sich dem Ende zu. Diesen Moment möchten wir festlich mit Ihnen verbringen.</p>
 
-  <div class="invitation-wrapper">
-    <div class="card">
-      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
-      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
-
-      <div class="ornament"></div>
-      <h1>Einladung</h1>
-      <div class="sub-header">Zur feierlichen Verabschiedung der Klasse 10.2</div>
-      
-      <p class="main-text">
-        Sehr geehrte Lehrerinnen und Lehrer,<br><br>
-        ein gemeinsamer Weg neigt sich dem Ende zu.<br>
-        Diesen besonderen Moment möchten wir gerne<br>
-        im festlichen Rahmen mit Ihnen verbringen.
-      </p>
-
-      <div class="event-details">
-        <p>4. Juli 2026</p>
-        <p>Empfang ab 18:00 Uhr</p>
-        <div style="height: 1px; width: 80px; background: var(--gold-dark); margin: 30px auto; opacity: 0.5;"></div>
-        <p>Anglerverein Wildau</p>
-      </div>
-
-      <p class="main-text" style="font-size: 28px;">
-        Wir freuen uns auf einen unvergesslichen<br>Abend voller Erinnerungen.
-      </p>
-
-      <div class="signature">Herzlichst,<br>Ihre Klasse 10.2</div>
-      <div class="ornament"></div>
+    <div class="details-box">
+      <p>4. Juli 2026 • 18:00 Uhr</p>
+      <p>Anglerverein Wildau</p>
     </div>
+
+    <p class="content-text" style="font-size: 18px;">Wir freuen uns auf einen unvergesslichen<br>Abend voller Erinnerungen.</p>
+    <div class="divider">✦</div>
+    <p style="font-style: italic; color: var(--gold-dark);">Herzlichst, Ihre Klasse 10.2</p>
   </div>
 
   <div class="teacher-section">
-    <p style="text-align:center; font-family:Cinzel; color:#8a6d3b; margin-bottom:60px; letter-spacing:8px; font-size:18px;">✦ RÜCKMELDUNGEN ✦</p>
+    <p style="font-family: 'Cinzel'; letter-spacing: 3px; color: var(--gold-dark); margin-bottom: 20px;">✦ RÜCKMELDUNGEN ✦</p>
     <div id="list">Lade Gästeliste...</div>
   </div>
 
-  <div class="footer-login" onclick="adminLogin()">⚙ Administrator Login</div>
-
-    <script>
-  // Wir laden die Lehrerliste direkt von GitHub (öffentlich)
-  async function loadTeachers() {
-    const container = document.getElementById('list');
-    // Nutze den direkten Link zu deiner Datei
-    const url = "https://githubusercontent.com";
-    
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error();
-      const list = await res.json();
+  <script>
+    async function load() {
+      const container = document.getElementById('list');
+      // WICHTIG: Hier dein korrekter Repository-Link
+      const url = "https://githubusercontent.com";
       
-      container.innerHTML = '';
-      list.forEach((t) => {
-        const div = document.createElement('div');
-        div.className = 'teacher-card';
-        // Wir zeigen den Namen und die RSVP-Buttons an
-        div.innerHTML = `
-          <span class="teacher-name" style="font-family:Cinzel; font-size:22px; color:#e0c891;">${t.name}</span>
-          <div>
-            <button class="btn-gold" onclick="sendRSVP('${t.name}', 'JA ✅')">Ja</button>
-            <button class="btn-gold" onclick="sendRSVP('${t.name}', 'NEIN ❌')">Nein</button>
-          </div>`;
-        container.appendChild(div);
-      });
-    } catch (e) {
-      container.innerHTML = '<p style="text-align:center; opacity:0.5;">Die Gästeliste wird geladen...</p>';
+      try {
+        const res = await fetch(url);
+        const list = await res.json();
+        container.innerHTML = '';
+        list.forEach(t => {
+          const div = document.createElement('div');
+          div.className = 'teacher-card';
+          div.innerHTML = `<span style="font-family:Cinzel;">${t.name}</span>
+            <div>
+              <button class="btn-gold" onclick="window.open('https://github.com: ${t.name}')">Ja</button>
+              <button class="btn-gold" onclick="window.open('https://github.com: ${t.name}')">Nein</button>
+            </div>`;
+          container.appendChild(div);
+        });
+      } catch (e) { container.innerHTML = 'Fehler beim Laden der Liste.'; }
     }
-  }
-
-  // Diese Funktion öffnet ein Fenster, damit der Lehrer die Info an dich sendet
-  function sendRSVP(name, status) {
-    // Es öffnet sich dein GitHub-Repo, wo der Lehrer nur noch auf "Submit" klicken muss
-    const githubIssueUrl = `https://github.com: ${name} - ${status}&body=${name} hat auf der Einladungsseite mit ${status} geantwortet.`;
-    window.open(githubIssueUrl, '_blank');
-  }
-
-  loadTeachers();
-</script>
+    load();
+  </script>
 </body>
 </html>
