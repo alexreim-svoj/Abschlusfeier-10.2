@@ -138,77 +138,43 @@
   <div class="footer-login" onclick="adminLogin()">⚙ Administrator Login</div>
 
     <script>
-  // FESTE KONFIGURATION - KEINE VARIABLEN-FEHLER MEHR
-  const token = localStorage.getItem('gh_token');
-  if (token) document.body.classList.add('is-admin');
-
-  async function load() {
+  // Wir laden die Lehrerliste direkt von GitHub (öffentlich)
+  async function loadTeachers() {
     const container = document.getElementById('list');
+    // Nutze den direkten Link zu deiner Datei
+    const url = "https://githubusercontent.com";
+    
     try {
-      const res = await fetch("https://github.com" + Date.now());
+      const res = await fetch(url);
       if (!res.ok) throw new Error();
-      const data = await res.json();
-      const list = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+      const list = await res.json();
       
       container.innerHTML = '';
-      list.forEach((t, i) => {
-        const status = t.status || 'offen';
-        const badge = status === 'ja' ? '<span class="status-badge status-ja">Zusage ✅</span>' : (status === 'nein' ? '<span class="status-badge status-nein">Absage ❌</span>' : '');
+      list.forEach((t) => {
         const div = document.createElement('div');
         div.className = 'teacher-card';
-        div.innerHTML = `<span class="teacher-name" style="font-family:Cinzel; font-size:20px;">${t.name} ${badge}</span>
+        // Wir zeigen den Namen und die RSVP-Buttons an
+        div.innerHTML = `
+          <span class="teacher-name" style="font-family:Cinzel; font-size:22px; color:#e0c891;">${t.name}</span>
           <div>
-            <button class="btn-gold" onclick="updateStatus(${i}, 'ja', '${data.sha}')">Ja</button>
-            <button class="btn-gold" onclick="updateStatus(${i}, 'nein', '${data.sha}')">Nein</button>
-            ${token ? `<button onclick="del(${i}, '${data.sha}')" style="color:#6b3a3a; background:none; border:none; margin-left:25px; cursor:pointer; font-size:24px;">✕</button>` : ''}
+            <button class="btn-gold" onclick="sendRSVP('${t.name}', 'JA ✅')">Ja</button>
+            <button class="btn-gold" onclick="sendRSVP('${t.name}', 'NEIN ❌')">Nein</button>
           </div>`;
         container.appendChild(div);
       });
-    } catch (e) { container.innerHTML = '<p style="text-align:center; opacity:0.5;">Bitte Lehrer über die Admin-Leiste hinzufügen.</p>'; }
+    } catch (e) {
+      container.innerHTML = '<p style="text-align:center; opacity:0.5;">Die Gästeliste wird geladen...</p>';
+    }
   }
 
-  async function updateStatus(index, newStatus, sha) {
-    if (!token) { alert("Bitte Administrator Login nutzen (unten am Zahnrad), damit die Antwort gespeichert werden kann."); return; }
-    const res = await fetch("https://github.com");
-    const data = await res.json();
-    const list = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-    list[index].status = newStatus;
-    await save(list, data.sha);
+  // Diese Funktion öffnet ein Fenster, damit der Lehrer die Info an dich sendet
+  function sendRSVP(name, status) {
+    // Es öffnet sich dein GitHub-Repo, wo der Lehrer nur noch auf "Submit" klicken muss
+    const githubIssueUrl = `https://github.com: ${name} - ${status}&body=${name} hat auf der Einladungsseite mit ${status} geantwortet.`;
+    window.open(githubIssueUrl, '_blank');
   }
 
-  async function addTeacher() {
-    const val = document.getElementById('new-name').value;
-    if(!val || !token) return;
-    const res = await fetch("https://github.com");
-    const data = await res.json();
-    const list = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-    list.push({name: val, status: 'offen'});
-    await save(list, data.sha);
-  }
-
-  async function del(idx, sha) {
-    if(!confirm("Löschen?")) return;
-    const res = await fetch("https://github.com");
-    const data = await res.json();
-    const list = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-    list.splice(idx, 1);
-    await save(list, data.sha);
-  }
-
-  async function save(l, s) {
-    const res = await fetch("https://github.com", {
-      method: 'PUT',
-      headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: "Update", content: btoa(unescape(encodeURIComponent(JSON.stringify(l, null, 2)))), sha: s })
-    });
-    if (res.ok) location.reload(); else alert("Fehler beim Speichern!");
-  }
-
-  function adminLogin() {
-    const t = prompt("GitHub Admin-Token:");
-    if(t) { localStorage.setItem('gh_token', t.trim()); location.reload(); }
-  }
-  load();
+  loadTeachers();
 </script>
 </body>
 </html>
