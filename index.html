@@ -372,98 +372,82 @@
   </div>
   
   <script>
-    // Nutze jetzt deinen npoint-Link (Kein GitHub-Token mehr nötig!)
     const JSON_URL = 'https://npoint.io';
-    
     let teachers = [];
-    
-    // Lehrerliste von npoint laden
+
     async function loadTeachers() {
       const container = document.getElementById('teacher-list');
-      
+      if (!container) return; // Sicherheit, falls das HTML-Element fehlt
+
       try {
-        const response = await fetch(JSON_URL);
-        if (!response.ok) throw new Error('Daten konnten nicht geladen werden');
+        // Wir fügen ein "cache: no-store" hinzu, damit er immer die neuesten Klicks lädt
+        const response = await fetch(JSON_URL, { cache: 'no-store' });
+        
+        if (!response.ok) throw new Error('Server-Fehler');
         
         teachers = await response.json();
         renderTeachers();
         
       } catch (error) {
-        console.error('Fehler beim Laden:', error);
-        container.innerHTML = `<p class="loading">⚠️ Fehler beim Laden der Liste.</p>`;
+        console.error('Ladefehler:', error);
+        container.innerHTML = `<p style="color: white;">⚠️ Die Lehrerliste konnte nicht geladen werden. Bitte Seite neu laden.</p>`;
       }
     }
-    
-    // Lehrer anzeigen (Farben basierend auf Status)
+
     function renderTeachers() {
       const container = document.getElementById('teacher-list');
+      if (!container) return;
       container.innerHTML = '';
       
       teachers.forEach((teacher, index) => {
         const item = document.createElement('div');
         item.className = 'teacher-item';
         
-        // Farbe für den Namen festlegen
-        let nameColor = 'black'; // Standard
-        if (teacher.status === 'ja') nameColor = 'green';
-        else if (teacher.status === 'nein') nameColor = 'red';
+        // Farbe für den Namen (Grün bei Zusage, Rot bei Absage)
+        let nameStyle = 'color: white; font-weight: bold;';
+        if (teacher.status === 'ja') nameStyle = 'color: #2ecc71; font-weight: bold;'; // Grün
+        else if (teacher.status === 'nein') nameStyle = 'color: #e74c3c; font-weight: bold;'; // Rot
         
         const status = teacher.status || null;
-        let statusBadge = '';
-        if (status === 'ja') statusBadge = '<span class="status-badge status-ja" style="color: green;">✓ Zusage</span>';
-        else if (status === 'nein') statusBadge = '<span class="status-badge status-nein" style="color: red;">✗ Absage</span>';
+        let statusText = status === 'ja' ? '✓ Zusage' : (status === 'nein' ? '✗ Absage' : '');
         
-        const jaClass = status === 'ja' ? 'active-ja' : '';
-        const neinClass = status === 'nein' ? 'active-nein' : '';
+        const jaActive = status === 'ja' ? 'active-ja' : '';
+        const neinActive = status === 'nein' ? 'active-nein' : '';
         
         item.innerHTML = `
           <div class="teacher-info">
-            <span class="teacher-name" style="color: ${nameColor}; font-weight: bold;">${teacher.name}</span>
-            ${statusBadge}
+            <span style="${nameStyle}">${teacher.name}</span>
+            <span class="status-text">${statusText}</span>
           </div>
           <div class="button-group">
-            <button class="btn ${jaClass}" onclick="handleResponse(${index}, 'ja')">Ja</button>
-            <button class="btn ${neinClass}" onclick="handleResponse(${index}, 'nein')">Nein</button>
+            <button class="btn ${jaActive}" onclick="handleResponse(${index}, 'ja')">Ja</button>
+            <button class="btn ${neinActive}" onclick="handleResponse(${index}, 'nein')">Nein</button>
           </div>
         `;
-        
         container.appendChild(item);
       });
     }
-    
-    // Antwort bei npoint speichern
+
     async function handleResponse(index, newStatus) {
-      const teacher = teachers[index];
-      const oldStatus = teacher.status;
-      
-      if (oldStatus && oldStatus !== newStatus) {
-        if (!confirm(`${teacher.name}, Antwort zu "${newStatus === 'ja' ? 'Zusage' : 'Absage'}" ändern?`)) return;
-      }
-      
       teachers[index].status = newStatus;
-      renderTeachers(); // Sofort grün/rot machen
+      renderTeachers(); // Sofortige Änderung auf der Seite
       
       try {
-        const response = await fetch(JSON_URL, {
-          method: 'POST', // npoint nutzt POST zum Speichern
+        await fetch(JSON_URL, {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(teachers)
         });
-        
-        if (!response.ok) throw new Error('Speichern fehlgeschlagen');
-        
-        alert(`✓ Vielen Dank, ${teacher.name}! Gespeichert.`);
-        
       } catch (error) {
-        console.error('Fehler:', error);
-        alert('❌ Fehler beim Speichern.');
-        teachers[index].status = oldStatus;
-        renderTeachers();
+        alert('Fehler beim Speichern. Bitte Internetverbindung prüfen.');
       }
     }
+
+    // WICHTIG: Erst starten, wenn die Seite komplett geladen ist!
+    window.onload = loadTeachers;
     
-    document.addEventListener('DOMContentLoaded', loadTeachers);
-    setInterval(loadTeachers, 15000); // Alle 15 Sek. prüfen, ob jemand anderes geklickt hat
+    // Alle 20 Sekunden nach neuen Antworten der anderen Lehrer suchen
+    setInterval(loadTeachers, 20000);
 </script>
 </body>
 </html>
