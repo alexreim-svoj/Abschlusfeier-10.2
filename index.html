@@ -372,58 +372,29 @@
   </div>
   
   <script>
-    // WICHTIG: Hier dein GitHub Personal Access Token einfügen
-    const GITHUB_TOKEN = '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'; // Ersetzen!
-    const GITHUB_USER = 'alexreim-svoj';
-    const GITHUB_REPO = 'Abschlusfeier-10.2';
-    const FILE_PATH = 'lehrer.json';
+    // Nutze jetzt deinen npoint-Link (Kein GitHub-Token mehr nötig!)
+    const JSON_URL = 'https://npoint.io';
     
     let teachers = [];
-    let fileSha = null;
     
-    // Lehrerliste von GitHub laden
+    // Lehrerliste von npoint laden
     async function loadTeachers() {
       const container = document.getElementById('teacher-list');
       
       try {
-        const response = await fetch(
-          `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`,
-          {
-            headers: {
-              'Accept': 'application/vnd.github.v3+json',
-              'Authorization': `token ${GITHUB_TOKEN}`
-            }
-          }
-        );
+        const response = await fetch(JSON_URL);
+        if (!response.ok) throw new Error('Daten konnten nicht geladen werden');
         
-        if (!response.ok) {
-          throw new Error('Datei konnte nicht geladen werden');
-        }
-        
-        const data = await response.json();
-        fileSha = data.sha;
-        
-        // Decode Base64 content
-        const content = atob(data.content);
-        teachers = JSON.parse(content);
-        
+        teachers = await response.json();
         renderTeachers();
         
       } catch (error) {
         console.error('Fehler beim Laden:', error);
-        container.innerHTML = `
-          <p class="loading">
-            ⚠️ Fehler beim Laden der Lehrerliste.<br><br>
-            Bitte prüfen Sie:<br>
-            1. Ist die lehrer.json im Repository vorhanden?<br>
-            2. Ist der GitHub Token korrekt?<br>
-            3. Hat der Token die Berechtigung "repo"?
-          </p>
-        `;
+        container.innerHTML = `<p class="loading">⚠️ Fehler beim Laden der Liste.</p>`;
       }
     }
     
-    // Lehrer anzeigen
+    // Lehrer anzeigen (Farben basierend auf Status)
     function renderTeachers() {
       const container = document.getElementById('teacher-list');
       container.innerHTML = '';
@@ -432,21 +403,22 @@
         const item = document.createElement('div');
         item.className = 'teacher-item';
         
+        // Farbe für den Namen festlegen
+        let nameColor = 'black'; // Standard
+        if (teacher.status === 'ja') nameColor = 'green';
+        else if (teacher.status === 'nein') nameColor = 'red';
+        
         const status = teacher.status || null;
         let statusBadge = '';
-        
-        if (status === 'ja') {
-          statusBadge = '<span class="status-badge status-ja">✓ Zusage</span>';
-        } else if (status === 'nein') {
-          statusBadge = '<span class="status-badge status-nein">✗ Absage</span>';
-        }
+        if (status === 'ja') statusBadge = '<span class="status-badge status-ja" style="color: green;">✓ Zusage</span>';
+        else if (status === 'nein') statusBadge = '<span class="status-badge status-nein" style="color: red;">✗ Absage</span>';
         
         const jaClass = status === 'ja' ? 'active-ja' : '';
         const neinClass = status === 'nein' ? 'active-nein' : '';
         
         item.innerHTML = `
           <div class="teacher-info">
-            <span class="teacher-name">${teacher.name}</span>
+            <span class="teacher-name" style="color: ${nameColor}; font-weight: bold;">${teacher.name}</span>
             ${statusBadge}
           </div>
           <div class="button-group">
@@ -459,70 +431,39 @@
       });
     }
     
-    // Antwort verarbeiten und auf GitHub speichern
+    // Antwort bei npoint speichern
     async function handleResponse(index, newStatus) {
       const teacher = teachers[index];
       const oldStatus = teacher.status;
       
-      // Bestätigung wenn Status geändert wird
       if (oldStatus && oldStatus !== newStatus) {
-        const confirmChange = confirm(
-          `${teacher.name}, möchten Sie Ihre Antwort von "${oldStatus === 'ja' ? 'Zusage' : 'Absage'}" zu "${newStatus === 'ja' ? 'Zusage' : 'Absage'}" ändern?`
-        );
-        if (!confirmChange) return;
+        if (!confirm(`${teacher.name}, Antwort zu "${newStatus === 'ja' ? 'Zusage' : 'Absage'}" ändern?`)) return;
       }
       
-      // Status aktualisieren
       teachers[index].status = newStatus;
+      renderTeachers(); // Sofort grün/rot machen
       
-      // Auf GitHub speichern
       try {
-        const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(teachers, null, 2))));
+        const response = await fetch(JSON_URL, {
+          method: 'POST', // npoint nutzt POST zum Speichern
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(teachers)
+        });
         
-        const response = await fetch(
-          `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`,
-          {
-            method: 'PUT',
-            headers: {
-              'Accept': 'application/vnd.github.v3+json',
-              'Authorization': `token ${GITHUB_TOKEN}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              message: `Update: ${teacher.name} - ${newStatus}`,
-              content: updatedContent,
-              sha: fileSha
-            })
-          }
-        );
+        if (!response.ok) throw new Error('Speichern fehlgeschlagen');
         
-        if (!response.ok) {
-          throw new Error('Speichern fehlgeschlagen');
-        }
-        
-        const result = await response.json();
-        fileSha = result.content.sha;
-        
-        // Erfolg!
-        renderTeachers();
-        
-        alert(`✓ Vielen Dank, ${teacher.name}!\nIhre ${newStatus === 'ja' ? 'Zusage' : 'Absage'} wurde gespeichert.`);
+        alert(`✓ Vielen Dank, ${teacher.name}! Gespeichert.`);
         
       } catch (error) {
-        console.error('Fehler beim Speichern:', error);
-        alert('❌ Fehler beim Speichern. Bitte versuchen Sie es erneut.');
-        
-        // Status zurücksetzen
+        console.error('Fehler:', error);
+        alert('❌ Fehler beim Speichern.');
         teachers[index].status = oldStatus;
         renderTeachers();
       }
     }
     
-    // Beim Laden der Seite
     document.addEventListener('DOMContentLoaded', loadTeachers);
-    
-    // Alle 30 Sekunden aktualisieren
-    setInterval(loadTeachers, 30000);
-  </script>
+    setInterval(loadTeachers, 15000); // Alle 15 Sek. prüfen, ob jemand anderes geklickt hat
+</script>
 </body>
 </html>
