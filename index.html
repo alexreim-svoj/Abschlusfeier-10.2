@@ -137,7 +137,7 @@
 
   <div class="footer-login" onclick="login()">⚙ Administrator Login</div>
 
-  <script>
+    <script>
     const USER = 'alexreim-svoj';
     const REPO = 'Abschlusfeier-10.2';
     const token = localStorage.getItem('gh_token');
@@ -147,7 +147,8 @@
     async function load() {
       const container = document.getElementById('list');
       try {
-        const res = await fetch(`https://github.com{USER}/${REPO}/contents/lehrer.json?t=${Date.now()}`);
+        // Korrigierte URL mit ://github.com und echten Variablen
+        const res = await fetch(`https://://github.com/repos/${USER}/${REPO}/contents/lehrer.json?t=${Date.now()}`);
         if (!res.ok) throw new Error();
         const data = await res.json();
         const list = JSON.parse(decodeURIComponent(escape(atob(data.content))));
@@ -159,48 +160,62 @@
           div.className = 'teacher-card';
           div.innerHTML = `<span class="teacher-name">${t.name} ${badge}</span>
             <div>
-              <button class="btn-gold" onclick="updateStatus(${i}, 'ja', ${JSON.stringify(list).replace(/"/g, '&quot;')}, '${data.sha}')">Ja</button>
-              <button class="btn-gold" onclick="updateStatus(${i}, 'nein', ${JSON.stringify(list).replace(/"/g, '&quot;')}, '${data.sha}')">Nein</button>
-              ${token ? `<button onclick="del(${i}, '${data.sha}', ${JSON.stringify(list).replace(/"/g, '&quot;')})" style="color:#6b3a3a; background:none; border:none; margin-left:30px; cursor:pointer; font-size:24px;">✕</button>` : ''}
+              <button class="btn-gold" onclick="updateStatus(${i}, 'ja')">Ja</button>
+              <button class="btn-gold" onclick="updateStatus(${i}, 'nein')">Nein</button>
+              ${token ? `<button onclick="del(${i})" style="color:#6b3a3a; background:none; border:none; margin-left:30px; cursor:pointer; font-size:24px;">✕</button>` : ''}
             </div>`;
           container.appendChild(div);
         });
       } catch (e) { container.innerHTML = '<p style="text-align:center; opacity:0.5;">Bitte Lehrer über die Admin-Leiste hinzufügen.</p>'; }
     }
 
-    async function updateStatus(idx, stat, list, sha) {
-      if (!token) { alert("Bitte Administrator Login nutzen (unten klicken)."); return; }
-      list[idx].status = stat;
-      await save(list, sha);
+    async function updateStatus(index, newStatus) {
+      if (!token) { alert("Bitte Administrator Login nutzen."); return; }
+      const res = await fetch(`https://://github.com/repos/${USER}/${REPO}/contents/lehrer.json`);
+      const data = await res.json();
+      const list = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+      list[index].status = newStatus;
+      await save(list, data.sha);
     }
 
     async function addTeacher() {
       const val = document.getElementById('new-name').value;
-      if (!val || !token) return;
-      const res = await fetch(`https://github.com{USER}/${REPO}/contents/lehrer.json`);
+      if(!val || !token) return;
+      try {
+        const res = await fetch(`https://://github.com/repos/${USER}/${REPO}/contents/lehrer.json`);
+        let list = []; let sha = "";
+        if (res.ok) {
+          const data = await res.json();
+          list = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+          sha = data.sha;
+        }
+        list.push({name: val, status: 'offen'});
+        await save(list, sha);
+      } catch(e) { await save([{name: val, status: 'offen'}], ""); }
+    }
+
+    async function del(idx) {
+      if(!confirm("Löschen?") || !token) return;
+      const res = await fetch(`https://://github.com/repos/${USER}/${REPO}/contents/lehrer.json`);
       const data = await res.json();
       const list = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-      list.push({name: val, status: 'offen'});
+      list.splice(idx, 1);
       await save(list, data.sha);
     }
 
-    async function del(idx, sha, list) {
-      if(!confirm("Eintrag unwiderruflich löschen?")) return;
-      list.splice(idx, 1);
-      await save(list, sha);
-    }
-
     async function save(l, s) {
-      const res = await fetch(`https://github.com{USER}/${REPO}/contents/lehrer.json`, {
+      const body = { message: "Update", content: btoa(unescape(encodeURIComponent(JSON.stringify(l, null, 2)))) };
+      if (s) body.sha = s;
+      const res = await fetch(`https://://github.com/repos/${USER}/${REPO}/contents/lehrer.json`, {
         method: 'PUT',
         headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: "Update Guestlist", content: btoa(unescape(encodeURIComponent(JSON.stringify(l, null, 2)))), sha: s })
+        body: JSON.stringify(body)
       });
-      if (res.ok) location.reload(); else alert("Fehler beim Speichern auf GitHub. Bitte Token prüfen!");
+      if (res.ok) location.reload(); else alert("Fehler beim Speichern! Token oder Repo-Name prüfen.");
     }
 
-    function login() {
-      const t = prompt("GitHub Admin-Token eingeben:");
+    function adminLogin() {
+      const t = prompt("GitHub Admin-Token:");
       if(t) { localStorage.setItem('gh_token', t.trim()); location.reload(); }
     }
     load();
